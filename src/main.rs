@@ -1,3 +1,9 @@
+mod field;
+mod field_info;
+mod log;
+mod log_message;
+mod log_parser;
+
 use color_eyre::Result;
 use ratatui::{
     DefaultTerminal, Frame,
@@ -6,8 +12,8 @@ use ratatui::{
     style::{self, Color, Modifier, Style, Stylize},
     text::Text,
     widgets::{
-        Block, BorderType, Borders, Cell, HighlightSpacing, Paragraph, Row, Scrollbar,
-        ScrollbarOrientation, ScrollbarState, Table, TableState,
+        Block, BorderType, Borders, Cell, HighlightSpacing, Row, Scrollbar, ScrollbarOrientation,
+        ScrollbarState, Table, TableState,
     },
 };
 use style::palette::tailwind;
