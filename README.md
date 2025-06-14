@@ -29,5 +29,7 @@ I work in a field where I work on a lot of legacy software, where it is easier
 to just add logging statements to the existing code to be able to run it on it's
 designated hardware and then troubleshoot any problems later from the logfile.
 Because of this I often make disgusting logs where every function call makes
-a TRACE line. This is useful in determining where it exactly broke but reading
-these logs is nearly impossible. This tool is designed to change that.
+a TRACE line and complex functions make a ton of output. This is useful in
+determining where exactly the application broke but reading these logs feels
+like putting your brain through a meat grinder. This tool is designed to change
+that.

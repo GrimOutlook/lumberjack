@@ -1,0 +1,9 @@
+16:44:54.572 [main] INFO  this.is.a.test.Main - Start: Main() Module
+16:44:54.576 [main] INFO  this.is.a.test.Module - Instantiating Module
+16:44:54.580 [main] INFO  ModuleRunnable - Creating the ModuleRunnable
+16:44:54.602 [main] DEBUG module.2.Parser - Running function1 using default path
+16:44:54.622 [main] DEBUG module.2.Parser - Running function2 using path /test/path.json
+16:45:28.581 [pool-138-thread-1] DEBUG this.is.a.test.monitoring.NetworkMonitor - Monitoring host
+16:45:28.671 [pool-138-thread-1] DEBUG this.is.a.test.monitoring.NetworkMonitor - Host [host] is pingable [true]
+16:45:28.672 [pool-138-thread-1] DEBUG Manager - Host info: 
+Object(hostId=Host, ipOrHostname=192.168.1.1, createTimeStamp=2025-06-06T16:45:28.672Z, endTimeStamp=Optional[2025-06-06T16:45:28.672Z], component=Optional.empty)
