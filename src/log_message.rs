@@ -5,8 +5,8 @@ pub struct LogMessage {
     pub fields: Vec<Field>,
 }
 
-impl FromIterator<&'static str> for LogMessage {
-    fn from_iter<I: IntoIterator<Item = &'static str>>(iter: I) -> Self {
+impl<'a> FromIterator<&'a str> for LogMessage {
+    fn from_iter<I: IntoIterator<Item = &'a str>>(iter: I) -> Self {
         let fields = iter
             .into_iter()
             .enumerate()
