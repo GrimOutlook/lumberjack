@@ -1,8 +1,18 @@
+use std::slice::Iter;
+
+use itertools::Itertools;
+
 use crate::{field::Field, field_info::FieldInfo, log_message::LogMessage};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Log {
     pub messages: Vec<LogMessage>,
+}
+
+impl Log {
+    pub fn raw(&self) -> Vec<Vec<&str>> {
+        self.messages.iter().map(LogMessage::raw).collect_vec()
+    }
 }
 
 impl FromIterator<Vec<&'static str>> for Log {
@@ -19,7 +29,7 @@ mod test {
 
     #[test]
     fn from_iter() {
-        let test_messages = vec![vec!["1", "message 1"], vec!["2", "message 2"]];
+        let test_messages = vec![vec!["12:10", "message 1"], vec!["13:15", "message 2"]];
         let expected = Log {
             messages: vec![
                 LogMessage {

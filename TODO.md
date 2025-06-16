@@ -8,3 +8,4 @@
 - [ ] Automatically parse log messages into fields for users.
 - [ ] Allow users to customize log parsing.
 - [ ] Allow user to hide bottom hotkey information
+- [ ] Search message text using both fixed-strings and regex.

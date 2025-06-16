@@ -1,8 +1,10 @@
 mod field;
 mod field_info;
+mod filter;
 mod log;
 mod log_message;
 mod log_parser;
+mod log_parsing_error;
 
 use color_eyre::Result;
 use ratatui::{
@@ -25,7 +27,7 @@ const PALETTES: [tailwind::Palette; 4] = [
     tailwind::INDIGO,
     tailwind::RED,
 ];
-const INFO_TEXT: &str = "help <h>";
+const INFO_TEXT: &str = " Help <h>   Quit <q> ";
 
 const ITEM_HEIGHT: usize = 4;
 

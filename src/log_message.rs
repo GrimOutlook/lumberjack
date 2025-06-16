@@ -1,8 +1,18 @@
+use std::slice::Iter;
+
+use itertools::Itertools;
+
 use crate::{field::Field, field_info::FieldInfo};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct LogMessage {
     pub fields: Vec<Field>,
+}
+
+impl LogMessage {
+    pub fn raw(&self) -> Vec<&str> {
+        self.fields.iter().map(Field::text).collect_vec()
+    }
 }
 
 impl<'a> FromIterator<&'a str> for LogMessage {
