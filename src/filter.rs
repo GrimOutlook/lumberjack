@@ -5,24 +5,21 @@ use regex::Regex;
 
 use crate::{field::Field, field_info::FieldInfo};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct Filter {
-    filter: Regex,
+    filter: Option<Regex>,
     field_info: Vec<Rc<FieldInfo>>,
 }
 
 impl Filter {
-    pub fn new(filter_string: impl ToString) -> Result<Filter> {
+    pub fn set_regex(&mut self, filter_string: impl ToString) -> Result<&mut Self> {
         let filter_string = &filter_string.to_string();
         let re = Regex::new(&filter_string)
             .with_context(|| format!("Invalid message filter {}", filter_string))?;
 
-        let filter = Filter {
-            filter: re,
-            field_info: Vec::default(),
-        };
+        self.filter = Some(re);
 
-        Ok(filter)
+        Ok(self)
     }
 
     pub fn add_field(&mut self, group_number: usize) {
@@ -31,7 +28,11 @@ impl Filter {
     }
 
     pub fn parse(&self, text: &str) -> Result<Vec<Field>> {
-        let Some(captures) = self.filter.captures(text) else {
+        let Some(filter) = self.filter.clone() else {
+            return Ok(vec![Field::raw(text)]);
+        };
+
+        let Some(captures) = filter.captures(text) else {
             bail!("Message '{}' does not match filter", text)
         };
 

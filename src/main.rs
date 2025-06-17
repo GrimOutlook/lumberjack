@@ -6,6 +6,7 @@ mod log_message;
 mod log_parser;
 
 use color_eyre::Result;
+use log::Log;
 use ratatui::{
     DefaultTerminal, Frame,
     crossterm::event::{self, Event, KeyCode, KeyEventKind, KeyModifiers},
@@ -93,8 +94,8 @@ impl Data {
 
 struct App {
     state: TableState,
-    items: Vec<Data>,
-    longest_item_lens: (u16, u16, u16), // order is (name, address, email)
+    log: Log,
+    longest_item_lens: Vec<u16>, // order is (name, address, email)
     scroll_state: ScrollbarState,
     colors: TableColors,
     color_index: usize,
@@ -109,13 +110,13 @@ impl App {
             scroll_state: ScrollbarState::new(data_vec.len().saturating_sub(1) * ITEM_HEIGHT),
             colors: TableColors::new(&PALETTES[0]),
             color_index: 0,
-            items: data_vec,
+            log: data_vec,
         }
     }
     pub fn next_row(&mut self) {
         let i = match self.state.selected() {
             Some(i) => {
-                if i >= self.items.len() - 1 {
+                if i >= self.log.len() - 1 {
                     0
                 } else {
                     i + 1
@@ -131,7 +132,7 @@ impl App {
         let i = match self.state.selected() {
             Some(i) => {
                 if i == 0 {
-                    self.items.len() - 1
+                    self.log.len() - 1
                 } else {
                     i - 1
                 }
@@ -216,7 +217,7 @@ impl App {
             .collect::<Row>()
             .style(header_style)
             .height(1);
-        let rows = self.items.iter().enumerate().map(|(i, data)| {
+        let rows = self.log.iter().enumerate().map(|(i, data)| {
             let color = match i % 2 {
                 0 => self.colors.normal_row_color,
                 _ => self.colors.alt_row_color,
@@ -280,58 +281,5 @@ impl App {
             .border_type(BorderType::Thick)
             .border_style(Style::new().fg(self.colors.footer_border_color));
         frame.render_widget(info_footer, area);
-    }
-}
-
-fn constraint_len_calculator(items: &[Data]) -> (u16, u16, u16) {
-    let name_len = items
-        .iter()
-        .map(Data::name)
-        .map(UnicodeWidthStr::width)
-        .max()
-        .unwrap_or(0);
-    let address_len = items
-        .iter()
-        .map(Data::address)
-        .flat_map(str::lines)
-        .map(UnicodeWidthStr::width)
-        .max()
-        .unwrap_or(0);
-    let email_len = items
-        .iter()
-        .map(Data::email)
-        .map(UnicodeWidthStr::width)
-        .max()
-        .unwrap_or(0);
-
-    #[allow(clippy::cast_possible_truncation)]
-    (name_len as u16, address_len as u16, email_len as u16)
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::Data;
-
-    #[test]
-    fn constraint_len_calculator() {
-        let test_data = vec![
-            Data {
-                name: "Emirhan Tala".to_string(),
-                address: "Cambridgelaan 6XX\n3584 XX Utrecht".to_string(),
-                email: "tala.emirhan@gmail.com".to_string(),
-            },
-            Data {
-                name: "thistextis26characterslong".to_string(),
-                address: "this line is 31 characters long\nbottom line is 33 characters long"
-                    .to_string(),
-                email: "thisemailis40caharacterslong@ratatui.com".to_string(),
-            },
-        ];
-        let (longest_name_len, longest_address_len, longest_email_len) =
-            crate::constraint_len_calculator(&test_data);
-
-        assert_eq!(26, longest_name_len);
-        assert_eq!(33, longest_address_len);
-        assert_eq!(40, longest_email_len);
     }
 }

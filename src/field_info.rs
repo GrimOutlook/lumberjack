@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Default, Clone, PartialEq)]
 pub struct FieldInfo {
     pub group_number: usize,
     pub custom_name: Option<Rc<str>>,

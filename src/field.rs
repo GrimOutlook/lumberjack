@@ -12,4 +12,11 @@ impl Field {
     pub fn text(&self) -> &str {
         &self.text
     }
+
+    pub fn raw(text: &str) -> Self {
+        Field {
+            text: text.into(),
+            field_info: FieldInfo::default().into(),
+        }
+    }
 }

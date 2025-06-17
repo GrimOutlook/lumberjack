@@ -52,9 +52,10 @@ mod test {
             ],
         ];
 
-        let mut filter =
-            Filter::new(r"(\d{2}:\d{2}:\d{2}\.\d{3})\s+(\[\S+\])\s+(\S+)\s+(\S+)\s+-\s+(.*)")
-                .unwrap();
+        let mut filter = Filter::default();
+        filter
+            .set_regex(r"(\d{2}:\d{2}:\d{2}\.\d{3})\s+(\[\S+\])\s+(\S+)\s+(\S+)\s+-\s+(.*)")
+            .unwrap();
         for i in 1..6 {
             filter.add_field(i);
         }
