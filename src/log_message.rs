@@ -1,10 +1,9 @@
-use std::slice::Iter;
-
+use derive_new::new;
 use itertools::Itertools;
 
 use crate::{field::Field, field_info::FieldInfo};
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, new)]
 pub struct LogMessage {
     pub fields: Vec<Field>,
 }

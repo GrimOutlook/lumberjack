@@ -4,7 +4,6 @@ mod filter;
 mod log;
 mod log_message;
 mod log_parser;
-mod log_parsing_error;
 
 use color_eyre::Result;
 use ratatui::{

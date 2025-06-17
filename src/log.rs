@@ -1,10 +1,11 @@
 use std::slice::Iter;
 
+use derive_new::new;
 use itertools::Itertools;
 
 use crate::{field::Field, field_info::FieldInfo, log_message::LogMessage};
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, new)]
 pub struct Log {
     pub messages: Vec<LogMessage>,
 }
