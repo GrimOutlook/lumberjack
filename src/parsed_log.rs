@@ -1,0 +1,71 @@
+use derive_new::new;
+use getset::Getters;
+use itertools::Itertools;
+
+use crate::log_message::LogMessage;
+
+#[derive(Debug, Clone, Getters, PartialEq, new)]
+pub struct ParsedLog {
+    #[getset(get = "pub")]
+    messages: Vec<LogMessage>,
+}
+
+impl ParsedLog {
+    pub fn raw(&self) -> Vec<Vec<&str>> {
+        self.messages.iter().map(LogMessage::raw).collect_vec()
+    }
+}
+
+impl FromIterator<Vec<&'static str>> for ParsedLog {
+    fn from_iter<I: IntoIterator<Item = Vec<&'static str>>>(iter: I) -> Self {
+        let messages = iter.into_iter().map(LogMessage::from_iter).collect();
+
+        ParsedLog { messages }
+    }
+}
+
+#[cfg(test)]
+mod tests {}
+
+#[cfg(test)]
+mod test {
+    use crate::{
+        field::Field, field_info::FieldInfo, log_message::LogMessage, parsed_log::ParsedLog,
+    };
+
+    #[test]
+    fn from_iter() {
+        let test_messages = vec![vec!["12:10", "message 1"], vec!["13:15", "message 2"]];
+        let expected = ParsedLog {
+            messages: vec![
+                LogMessage {
+                    fields: vec![
+                        Field {
+                            field_info: FieldInfo::new(0).into(),
+                            text: test_messages[0][0].into(),
+                        },
+                        Field {
+                            field_info: FieldInfo::new(1).into(),
+                            text: test_messages[0][1].into(),
+                        },
+                    ],
+                },
+                LogMessage {
+                    fields: vec![
+                        Field {
+                            field_info: FieldInfo::new(0).into(),
+                            text: test_messages[1][0].into(),
+                        },
+                        Field {
+                            field_info: FieldInfo::new(1).into(),
+                            text: test_messages[1][1].into(),
+                        },
+                    ],
+                },
+            ],
+        };
+
+        let actual = ParsedLog::from_iter(test_messages);
+        assert_eq!(expected, actual);
+    }
+}
