@@ -1,12 +1,12 @@
 mod field;
 mod field_info;
 mod filter;
-mod log;
 mod log_message;
-mod log_parser;
+mod parsed_log;
+mod raw_log;
 
 use color_eyre::Result;
-use log::Log;
+use parsed_log::ParsedLog;
 use ratatui::{
     DefaultTerminal, Frame,
     crossterm::event::{self, Event, KeyCode, KeyEventKind, KeyModifiers},
@@ -70,7 +70,7 @@ impl TableColors {
 
 struct App {
     state: TableState,
-    log: Log,
+    log: ParsedLog,
     scroll_state: ScrollbarState,
     colors: TableColors,
     color_index: usize,
@@ -84,7 +84,7 @@ impl App {
             scroll_state: ScrollbarState::new(lines.len().saturating_sub(1) * ITEM_HEIGHT),
             colors: TableColors::new(&PALETTES[0]),
             color_index: 0,
-            log: Log::new(lines),
+            log: ParsedLog::new(lines),
         }
     }
     pub fn next_row(&mut self) {

@@ -1,9 +1,18 @@
-use std::rc::Rc;
+use std::{fmt::Display, rc::Rc};
 
 use anyhow::{Context, Result, bail};
 use regex::Regex;
+use thiserror::Error;
 
 use crate::{field::Field, field_info::FieldInfo};
+
+#[derive(Debug, Error)]
+enum ParsingError {
+    #[error("Filter is not set")]
+    FilterNotSet,
+    #[error("Filter does not apply to text: {0}")]
+    FilterMismatch(String),
+}
 
 #[derive(Clone, Debug, Default)]
 pub struct Filter {
