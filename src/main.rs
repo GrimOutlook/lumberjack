@@ -68,30 +68,6 @@ impl TableColors {
     }
 }
 
-struct Data {
-    name: String,
-    address: String,
-    email: String,
-}
-
-impl Data {
-    const fn ref_array(&self) -> [&String; 3] {
-        [&self.name, &self.address, &self.email]
-    }
-
-    fn name(&self) -> &str {
-        &self.name
-    }
-
-    fn address(&self) -> &str {
-        &self.address
-    }
-
-    fn email(&self) -> &str {
-        &self.email
-    }
-}
-
 struct App {
     state: TableState,
     log: Log,
