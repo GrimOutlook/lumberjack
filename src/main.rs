@@ -95,7 +95,6 @@ impl Data {
 struct App {
     state: TableState,
     log: Log,
-    longest_item_lens: Vec<u16>, // order is (name, address, email)
     scroll_state: ScrollbarState,
     colors: TableColors,
     color_index: usize,
@@ -103,20 +102,19 @@ struct App {
 
 impl App {
     fn new() -> Self {
-        let data_vec = Vec::new();
+        let lines = Vec::new();
         Self {
             state: TableState::default().with_selected(0),
-            longest_item_lens: constraint_len_calculator(&data_vec),
-            scroll_state: ScrollbarState::new(data_vec.len().saturating_sub(1) * ITEM_HEIGHT),
+            scroll_state: ScrollbarState::new(lines.len().saturating_sub(1) * ITEM_HEIGHT),
             colors: TableColors::new(&PALETTES[0]),
             color_index: 0,
-            log: data_vec,
+            log: Log::new(lines),
         }
     }
     pub fn next_row(&mut self) {
         let i = match self.state.selected() {
             Some(i) => {
-                if i >= self.log.len() - 1 {
+                if i >= self.log.messages().len() - 1 {
                     0
                 } else {
                     i + 1
@@ -132,7 +130,7 @@ impl App {
         let i = match self.state.selected() {
             Some(i) => {
                 if i == 0 {
-                    self.log.len() - 1
+                    self.log.messages().len() - 1
                 } else {
                     i - 1
                 }
@@ -217,12 +215,13 @@ impl App {
             .collect::<Row>()
             .style(header_style)
             .height(1);
-        let rows = self.log.iter().enumerate().map(|(i, data)| {
+        let rows = self.log.messages().iter().enumerate().map(|(i, data)| {
+            // Alternate colors for each listing
             let color = match i % 2 {
                 0 => self.colors.normal_row_color,
                 _ => self.colors.alt_row_color,
             };
-            let item = data.ref_array();
+            let item = data.raw();
             item.into_iter()
                 .map(|content| Cell::from(Text::from(format!("\n{content}\n"))))
                 .collect::<Row>()
@@ -234,9 +233,9 @@ impl App {
             rows,
             [
                 // + 1 is for padding.
-                Constraint::Length(self.longest_item_lens.0 + 1),
-                Constraint::Min(self.longest_item_lens.1 + 1),
-                Constraint::Min(self.longest_item_lens.2),
+                Constraint::Min(1),
+                Constraint::Min(1),
+                Constraint::Min(1),
             ],
         )
         .header(header)
