@@ -25,9 +25,6 @@ impl FromIterator<Vec<&'static str>> for ParsedLog {
 }
 
 #[cfg(test)]
-mod tests {}
-
-#[cfg(test)]
 mod test {
     use crate::{
         field::Field, field_info::FieldInfo, log_message::LogMessage, parsed_log::ParsedLog,

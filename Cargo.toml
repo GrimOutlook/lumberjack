@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 anyhow = "1.0.98"
+clap = { version = "4.5.40", features = ["derive"] }
 color-eyre = "0.6.3"
 crossterm = "0.29.0"
 derive-new = "0.7.0"

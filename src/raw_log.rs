@@ -1,10 +1,11 @@
-use crate::{filter::Filter, log_message::LogMessage, parsed_log::ParsedLog};
+use crate::{filter::Filter, log::Log, log_message::LogMessage, parsed_log::ParsedLog};
 
 use anyhow::Result;
 use derive_new::new;
+use itertools::Itertools;
 
 #[derive(new)]
-struct RawLog {
+pub struct RawLog {
     // Full, unfiltered, unaltered log text
     #[new(into)]
     log_text: String,
@@ -27,6 +28,14 @@ impl RawLog {
     fn parse_message(filter: Filter, message_text: &str) -> Result<LogMessage> {
         let fields = filter.parse(message_text)?;
         Ok(LogMessage::new(fields))
+    }
+}
+
+impl Log for RawLog {
+    fn lines<String>(&self) -> Vec<String> {
+        // // NOTE: This doesn't work for some reason
+        // self.log_text.lines().collect_vec()
+        todo!()
     }
 }
 

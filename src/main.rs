@@ -1,11 +1,14 @@
 mod field;
 mod field_info;
 mod filter;
+mod log;
 mod log_message;
 mod parsed_log;
 mod raw_log;
 
+use clap::Parser;
 use color_eyre::Result;
+use log::Log;
 use parsed_log::ParsedLog;
 use ratatui::{
     DefaultTerminal, Frame,
@@ -18,6 +21,7 @@ use ratatui::{
         ScrollbarState, Table, TableState,
     },
 };
+use raw_log::RawLog;
 use style::palette::tailwind;
 use unicode_width::UnicodeWidthStr;
 
@@ -31,10 +35,16 @@ const INFO_TEXT: &str = " Help <h>   Quit <q> ";
 
 const ITEM_HEIGHT: usize = 4;
 
+#[derive(Parser)]
+struct Args {
+    file: String,
+}
+
 fn main() -> Result<()> {
+    let args = Args::parse();
     color_eyre::install()?;
     let terminal = ratatui::init();
-    let app_result = App::new().run(terminal);
+    let app_result = App::new(args.file).run(terminal);
     ratatui::restore();
     app_result
 }
@@ -70,21 +80,23 @@ impl TableColors {
 
 struct App {
     state: TableState,
-    log: ParsedLog,
+    log: Log,
     scroll_state: ScrollbarState,
     colors: TableColors,
     color_index: usize,
 }
 
 impl App {
-    fn new() -> Self {
-        let lines = Vec::new();
+    fn new(text: String) -> Self {
+        let raw_log = RawLog::new(text);
         Self {
             state: TableState::default().with_selected(0),
-            scroll_state: ScrollbarState::new(lines.len().saturating_sub(1) * ITEM_HEIGHT),
+            scroll_state: ScrollbarState::new(
+                raw_log.lines().len().saturating_sub(1) * ITEM_HEIGHT,
+            ),
             colors: TableColors::new(&PALETTES[0]),
             color_index: 0,
-            log: ParsedLog::new(lines),
+            log: Log::RawLog(raw_log),
         }
     }
     pub fn next_row(&mut self) {
