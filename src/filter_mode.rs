@@ -1,5 +1,6 @@
 #[derive(Debug, Default, Clone, PartialEq)]
 pub enum FilterMode {
+    None,
     Simple {
         fields: usize,
     },
@@ -9,4 +10,3 @@ pub enum FilterMode {
     #[default]
     Automatic,
 }
-

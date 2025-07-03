@@ -570,6 +570,7 @@ dependencies = [
  "derive-new",
  "getset",
  "itertools 0.14.0",
+ "log",
  "ratatui",
  "regex",
  "thiserror",

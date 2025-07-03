@@ -3,10 +3,10 @@ pub mod ui {
 }
 mod field;
 mod field_info;
-mod filter;
 pub mod filter_mode;
 mod log;
 mod log_line;
+mod regex_filter;
 
 use crate::ui::filter_menu::FilterWindow;
 use clap::Parser;
