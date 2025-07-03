@@ -8,6 +8,7 @@
 - [ ] Automatically parse log messages into fields for users.
 - [ ] Allow users to customize log parsing.
 - [ ] Allow user to hide bottom hotkey information
+- [ ] Allow users to change hotkeys
 - [ ] Search message text using both fixed-strings and regex.
 - [ ] When calculating the max width of a line use the `UnicodeWidthStr` method
 from `unicode_width` crate.

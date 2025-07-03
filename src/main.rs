@@ -1,9 +1,13 @@
+pub mod ui {
+    pub mod filter_menu;
+}
 mod field;
 mod field_info;
 mod filter;
 mod log;
 mod log_line;
 
+use crate::ui::filter_menu::Popup;
 use clap::Parser;
 use color_eyre::Result;
 use log::Log;
@@ -161,6 +165,8 @@ impl App {
                         }
                         KeyCode::Char('l') | KeyCode::Right => self.next_column(),
                         KeyCode::Char('h') | KeyCode::Left => self.previous_column(),
+                        KeyCode::Char('/') => todo!("Open search menu"),
+                        // KeyCode::Char(' ') => self.open_filter_menu(),
                         _ => {}
                     }
                 }
@@ -177,6 +183,7 @@ impl App {
         self.render_table(frame, rects[0]);
         self.render_scrollbar(frame, rects[0]);
         self.render_footer(frame, rects[1]);
+        self.render_filter_menu(frame);
     }
 
     fn render_table(&mut self, frame: &mut Frame, area: Rect) {
@@ -269,5 +276,23 @@ impl App {
             .border_type(BorderType::Thick)
             .border_style(Style::new().fg(self.colors.footer_border_color));
         frame.render_widget(info_footer, area);
+    }
+
+    fn render_filter_menu(&self, frame: &mut Frame) {
+        let area = frame.area();
+        let popup_area = Rect {
+            x: area.width / 4,
+            y: area.height / 3,
+            width: area.width / 2,
+            height: area.height / 3,
+        };
+        let popup = Popup::default()
+            .with_content("Hello world!".into())
+            .with_style(Style::new().yellow())
+            .with_title("With Clear".into())
+            .with_title_style(Style::new().white().bold())
+            .with_border_style(Style::new().red());
+        let popup = popup;
+        frame.render_widget(popup, popup_area);
     }
 }
