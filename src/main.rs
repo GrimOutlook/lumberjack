@@ -210,8 +210,6 @@ impl App {
             [
                 // + 1 is for padding.
                 Constraint::Min(1),
-                Constraint::Min(1),
-                Constraint::Min(1),
             ],
         )
         .row_highlight_style(selected_row_style)
