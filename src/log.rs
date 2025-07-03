@@ -2,20 +2,25 @@ use std::{
     fs::File,
     io::{BufRead, BufReader},
     path::PathBuf,
+    rc::Rc,
 };
 
 use anyhow::{Context, Result};
 use getset::Getters;
 use itertools::Itertools;
 
-use crate::{filter::Filter, log_line::LogLine};
+use crate::{field_info::FieldInfo, filter::Filter, log_line::LogLine};
 
 #[derive(Debug, Clone, Getters, PartialEq)]
 pub struct Log {
     #[getset(get = "pub")]
     filepath: PathBuf,
+
     #[getset(get = "pub")]
     lines: Vec<LogLine>,
+
+    #[getset(get = "pub")]
+    field_info: Vec<Rc<FieldInfo>>,
 }
 
 impl Log {
@@ -52,7 +57,14 @@ impl Log {
             };
         }
 
-        Ok(Log { filepath, lines })
+        Ok(Log {
+            filepath,
+            lines: lines.clone(),
+            field_info: lines.get(0).map_or_else(
+                || vec![], // If there are no lines, return an empty field_info
+                |line| line.fields.iter().map(|f| f.field_info.clone()).collect(),
+            ),
+        })
     }
 
     fn parse_line(filter: Filter, message_text: &str) -> Result<Option<LogLine>> {
@@ -65,6 +77,15 @@ impl Log {
         Ok(Some(LogLine::new(fields)))
     }
 
+    pub fn field_names(&self) -> Option<Vec<Rc<str>>> {
+        self.field_info
+            .iter()
+            .map(|field_info| field_info.name.clone())
+            .collect::<Option<Vec<Rc<str>>>>()
+    }
+
+    // TODO: Remove this method if not used by first release
+    #[allow(unused)]
     pub fn raw(&self) -> Vec<Vec<&str>> {
         self.lines.iter().map(LogLine::raw).collect_vec()
     }
@@ -78,6 +99,7 @@ impl FromIterator<Vec<&'static str>> for Log {
         Log {
             filepath: "".into(),
             lines: messages,
+            field_info: Vec::new(),
         }
     }
 }
@@ -91,6 +113,7 @@ mod test {
         let test_messages = vec![vec!["12:10", "message 1"], vec!["13:15", "message 2"]];
         let expected = Log {
             filepath: "".into(),
+            field_info: vec![FieldInfo::new(0).into(), FieldInfo::new(1).into()],
             lines: vec![
                 LogLine {
                     fields: vec![

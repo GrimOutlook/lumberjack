@@ -4,8 +4,6 @@ mod filter;
 mod log;
 mod log_line;
 
-use std::rc::Rc;
-
 use clap::Parser;
 use color_eyre::Result;
 use log::Log;
@@ -193,19 +191,13 @@ impl App {
             .add_modifier(Modifier::REVERSED)
             .fg(self.colors.selected_cell_style_fg);
 
-        let header = ["Name", "Address", "Email"]
-            .into_iter()
-            .map(Cell::from)
-            .collect::<Row>()
-            .style(header_style)
-            .height(1);
-        let rows = self.log.lines().iter().enumerate().map(|(i, data)| {
+        let rows = self.log.lines().iter().enumerate().map(|(i, line)| {
             // Alternate colors for each listing
             let color = match i % 2 {
                 0 => self.colors.normal_row_color,
                 _ => self.colors.alt_row_color,
             };
-            let item = data.raw();
+            let item = line.raw();
             item.into_iter()
                 .map(|content| Cell::from(Text::from(format!("\n{content}\n"))))
                 .collect::<Row>()
@@ -213,7 +205,7 @@ impl App {
                 .height(4)
         });
         let bar = " █ ";
-        let t = Table::new(
+        let mut t = Table::new(
             rows,
             [
                 // + 1 is for padding.
@@ -222,7 +214,6 @@ impl App {
                 Constraint::Min(1),
             ],
         )
-        .header(header)
         .row_highlight_style(selected_row_style)
         .column_highlight_style(selected_col_style)
         .cell_highlight_style(selected_cell_style)
@@ -234,6 +225,22 @@ impl App {
         ]))
         .bg(self.colors.buffer_bg)
         .highlight_spacing(HighlightSpacing::Always);
+
+        let field_names = self.log.field_names();
+
+        if let Some(names) = field_names {
+            let header = names
+                .iter()
+                .map(ToString::to_string)
+                .map(Cell::from)
+                .collect::<Row>()
+                .style(header_style)
+                .height(1);
+
+            // TODO: There has to be a better way to conditionally use chained methods
+            t = t.clone().header(header);
+        }
+
         frame.render_stateful_widget(t, area, &mut self.state);
     }
 
