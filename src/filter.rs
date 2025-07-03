@@ -47,11 +47,11 @@ impl Filter {
 
         let mut parsed_text = Vec::default();
         for field_info in self.field_info.iter() {
-            let Some(field_text) = captures.get(field_info.group_number) else {
+            let Some(field_text) = captures.get(field_info.field_index) else {
                 bail!(
                     "Message '{}' is missing match group #{}",
                     text,
-                    field_info.group_number
+                    field_info.field_index
                 )
             };
 

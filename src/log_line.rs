@@ -4,17 +4,17 @@ use itertools::Itertools;
 use crate::{field::Field, field_info::FieldInfo};
 
 #[derive(Debug, Clone, PartialEq, new)]
-pub struct LogMessage {
+pub struct LogLine {
     pub fields: Vec<Field>,
 }
 
-impl LogMessage {
+impl LogLine {
     pub fn raw(&self) -> Vec<&str> {
         self.fields.iter().map(Field::text).collect_vec()
     }
 }
 
-impl<'a> FromIterator<&'a str> for LogMessage {
+impl<'a> FromIterator<&'a str> for LogLine {
     fn from_iter<I: IntoIterator<Item = &'a str>>(iter: I) -> Self {
         let fields = iter
             .into_iter()
@@ -25,7 +25,7 @@ impl<'a> FromIterator<&'a str> for LogMessage {
             })
             .collect();
 
-        LogMessage { fields }
+        LogLine { fields }
     }
 }
 
@@ -33,12 +33,12 @@ impl<'a> FromIterator<&'a str> for LogMessage {
 mod test {
     use crate::{field::Field, field_info::FieldInfo};
 
-    use super::LogMessage;
+    use super::LogLine;
 
     #[test]
     fn from_iter() {
         let test_array = ["hello", "goodbye"];
-        let expected = LogMessage {
+        let expected = LogLine {
             fields: vec![
                 Field {
                     field_info: FieldInfo::new(0).into(),
@@ -50,7 +50,7 @@ mod test {
                 },
             ],
         };
-        let actual = LogMessage::from_iter(test_array);
+        let actual = LogLine::from_iter(test_array);
         assert_eq!(actual, expected);
     }
 }

@@ -2,14 +2,13 @@ mod field;
 mod field_info;
 mod filter;
 mod log;
-mod log_message;
-mod parsed_log;
-mod raw_log;
+mod log_line;
+
+use std::rc::Rc;
 
 use clap::Parser;
 use color_eyre::Result;
 use log::Log;
-use parsed_log::ParsedLog;
 use ratatui::{
     DefaultTerminal, Frame,
     crossterm::event::{self, Event, KeyCode, KeyEventKind, KeyModifiers},
@@ -21,7 +20,6 @@ use ratatui::{
         ScrollbarState, Table, TableState,
     },
 };
-use raw_log::RawLog;
 use style::palette::tailwind;
 use unicode_width::UnicodeWidthStr;
 
@@ -87,22 +85,20 @@ struct App {
 }
 
 impl App {
-    fn new(text: String) -> Self {
-        let raw_log = RawLog::new(text);
+    fn new(file_path: String) -> Self {
+        let log = Log::new(file_path.into()).unwrap_or_else(|_| todo!("Handle me!"));
         Self {
             state: TableState::default().with_selected(0),
-            scroll_state: ScrollbarState::new(
-                raw_log.lines().len().saturating_sub(1) * ITEM_HEIGHT,
-            ),
+            scroll_state: ScrollbarState::new(log.lines().len().saturating_sub(1) * ITEM_HEIGHT),
             colors: TableColors::new(&PALETTES[0]),
             color_index: 0,
-            log: Log::RawLog(raw_log),
+            log,
         }
     }
     pub fn next_row(&mut self) {
         let i = match self.state.selected() {
             Some(i) => {
-                if i >= self.log.messages().len() - 1 {
+                if i >= self.log.lines().len() - 1 {
                     0
                 } else {
                     i + 1
@@ -118,7 +114,7 @@ impl App {
         let i = match self.state.selected() {
             Some(i) => {
                 if i == 0 {
-                    self.log.messages().len() - 1
+                    self.log.lines().len() - 1
                 } else {
                     i - 1
                 }
@@ -203,7 +199,7 @@ impl App {
             .collect::<Row>()
             .style(header_style)
             .height(1);
-        let rows = self.log.messages().iter().enumerate().map(|(i, data)| {
+        let rows = self.log.lines().iter().enumerate().map(|(i, data)| {
             // Alternate colors for each listing
             let color = match i % 2 {
                 0 => self.colors.normal_row_color,

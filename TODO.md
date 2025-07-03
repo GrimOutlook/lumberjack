@@ -11,3 +11,7 @@
 - [ ] Search message text using both fixed-strings and regex.
 - [ ] When calculating the max width of a line use the `UnicodeWidthStr` method
 from `unicode_width` crate.
+- [ ] Support piping into the application.
+  - Probably just want to save the text in a temp directory as data is passed in
+    and only want to load the area that the user is looking at at any given
+    time.
