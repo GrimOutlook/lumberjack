@@ -1,10 +1,14 @@
 pub mod ui {
     pub mod filter_menu;
+    pub mod open_popup;
+}
+pub mod filter {
+    pub mod filter;
+    pub mod regex_filter;
+    pub mod simple_filter;
 }
 mod field;
 mod field_info;
-mod filter;
-pub mod filter_mode;
 mod log;
 mod log_line;
 
@@ -14,7 +18,7 @@ use color_eyre::Result;
 use log::Log;
 use ratatui::{
     DefaultTerminal, Frame,
-    crossterm::event::{self, Event, KeyCode, KeyEventKind, KeyModifiers},
+    crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers},
     layout::{Constraint, Layout, Margin, Rect},
     style::{self, Color, Modifier, Style, Stylize},
     text::Text,
@@ -24,6 +28,7 @@ use ratatui::{
     },
 };
 use style::palette::tailwind;
+use ui::open_popup::OpenPopup;
 use unicode_width::UnicodeWidthStr;
 
 const PALETTES: [tailwind::Palette; 4] = [
@@ -85,7 +90,8 @@ struct App {
     scroll_state: ScrollbarState,
     colors: TableColors,
     color_index: usize,
-    filter_menu_open: bool,
+    open_popup: OpenPopup,
+    is_closing: bool,
 }
 
 impl App {
@@ -97,7 +103,8 @@ impl App {
             colors: TableColors::new(&PALETTES[0]),
             color_index: 0,
             log,
-            filter_menu_open: false,
+            open_popup: OpenPopup::None,
+            is_closing: false,
         }
     }
     pub fn next_row(&mut self) {
@@ -157,33 +164,49 @@ impl App {
 
             if let Event::Key(key) = event::read()? {
                 if key.kind == KeyEventKind::Press {
-                    let shift_pressed = key.modifiers.contains(KeyModifiers::SHIFT);
-                    match key.code {
-                        KeyCode::Char('q') | KeyCode::Esc => {
-                            if self.filter_menu_open {
-                                self.filter_menu_open = false;
-                            } else {
-                                return Ok(());
-                            }
-                        }
-                        KeyCode::Char('j') | KeyCode::Down => self.next_row(),
-                        KeyCode::Char('k') | KeyCode::Up => self.previous_row(),
-                        KeyCode::Char('l') | KeyCode::Right if shift_pressed => self.next_color(),
-                        KeyCode::Char('h') | KeyCode::Left if shift_pressed => {
-                            self.previous_color();
-                        }
-                        KeyCode::Char('l') | KeyCode::Right => self.next_column(),
-                        KeyCode::Char('h') | KeyCode::Left => self.previous_column(),
-                        KeyCode::Char('/') => todo!("Open search menu"),
-                        KeyCode::Char(' ') => {
-                            if !self.filter_menu_open {
-                                self.filter_menu_open = true;
-                            }
-                        }
-                        _ => {}
+                    match self.open_popup {
+                        OpenPopup::None => self.handle_viewer_keypress(key),
+                        OpenPopup::Filter => self.handle_filter_menu_keypress(key),
                     }
                 }
             }
+
+            if self.is_closing {
+                return Ok(());
+            }
+        }
+    }
+
+    fn handle_viewer_keypress(&mut self, key: KeyEvent) {
+        let shift_pressed = key.modifiers.contains(KeyModifiers::SHIFT);
+        match key.code {
+            KeyCode::Char('q') | KeyCode::Esc => {
+                self.is_closing = true;
+            }
+            KeyCode::Char('j') | KeyCode::Down => self.next_row(),
+            KeyCode::Char('k') | KeyCode::Up => self.previous_row(),
+            KeyCode::Char('l') | KeyCode::Right if shift_pressed => self.next_color(),
+            KeyCode::Char('h') | KeyCode::Left if shift_pressed => {
+                self.previous_color();
+            }
+            KeyCode::Char('l') | KeyCode::Right => self.next_column(),
+            KeyCode::Char('h') | KeyCode::Left => self.previous_column(),
+            KeyCode::Char('/') => todo!("Open search menu"),
+            KeyCode::Char(' ') => {
+                if let OpenPopup::None = self.open_popup {
+                    self.open_popup = OpenPopup::Filter;
+                }
+            }
+            _ => {}
+        }
+    }
+
+    fn handle_filter_menu_keypress(&mut self, key: KeyEvent) {
+        match key.code {
+            KeyCode::Char('q') | KeyCode::Esc => {
+                self.open_popup = OpenPopup::None;
+            }
+            _ => {}
         }
     }
 
@@ -196,8 +219,11 @@ impl App {
         self.render_table(frame, rects[0]);
         self.render_scrollbar(frame, rects[0]);
         self.render_footer(frame, rects[1]);
-        if self.filter_menu_open {
-            self.render_filter_menu(frame);
+        match self.open_popup {
+            OpenPopup::None => {}
+            OpenPopup::Filter => {
+                self.render_filter_menu(frame);
+            }
         }
     }
 

@@ -9,7 +9,14 @@ use anyhow::{Context, Result};
 use getset::Getters;
 use itertools::Itertools;
 
-use crate::{field_info::FieldInfo, filter::Filter, log_line::LogLine};
+use crate::{
+    field_info::FieldInfo,
+    filter::{
+        filter::{Filter, FilterMode},
+        simple_filter::SimpleFilter,
+    },
+    log_line::LogLine,
+};
 
 #[derive(Debug, Clone, Getters, PartialEq)]
 pub struct Log {
@@ -25,10 +32,10 @@ pub struct Log {
 
 impl Log {
     pub fn new(filepath: PathBuf) -> Result<Self> {
-        Self::parse(filepath, Filter::default())
+        Self::parse(filepath, SimpleFilter::new(0).into())
     }
 
-    fn parse(filepath: PathBuf, filter: Filter) -> Result<Self> {
+    fn parse(filepath: PathBuf, filter: FilterMode) -> Result<Self> {
         let filepath_os_str = filepath.clone().into_os_string();
         let filepath_str = filepath_os_str.as_os_str().to_str().unwrap();
 
@@ -36,45 +43,16 @@ impl Log {
             .with_context(|| format!("Failed to open file {}", filepath_str))?;
         let reader = BufReader::new(file);
 
-        let mut lines = vec![];
-        for (index, line) in reader.lines().enumerate() {
-            let line =
-                line.with_context(|| format!("Failed to read line: {}:{}", filepath_str, index))?;
-
-            // Remove any empty lines in file.
-            let parsed_line_opt = Self::parse_line(filter.clone(), &line).with_context(|| {
-                format!(
-                    "Failed to parse line from file {} on line {}",
-                    filepath_str, index
-                )
-            })?;
-            match parsed_line_opt {
-                Some(log_line) => lines.push(log_line),
-                None => {
-                    // If the returned line is None, it means that the line is empty and should not be added to the parsed log
-                    continue;
-                }
-            };
-        }
+        let lines = filter.parse(reader)?;
 
         Ok(Log {
             filepath,
             lines: lines.clone(),
-            field_info: lines.get(0).map_or_else(
-                || vec![], // If there are no lines, return an empty field_info
+            field_info: lines.first().map_or_else(
+                Vec::new, // If there are no lines, return an empty field_info
                 |line| line.fields.iter().map(|f| f.field_info.clone()).collect(),
             ),
         })
-    }
-
-    fn parse_line(filter: Filter, message_text: &str) -> Result<Option<LogLine>> {
-        // Check if log message is empty
-        if message_text.trim().is_empty() {
-            return Ok(None);
-        }
-
-        let fields = filter.parse(message_text)?;
-        Ok(Some(LogLine::new(fields)))
     }
 
     pub fn field_names(&self) -> Option<Vec<Rc<str>>> {

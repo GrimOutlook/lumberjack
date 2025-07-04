@@ -1,13 +1,12 @@
-use getset::{Setters, WithSetters};
+use getset::WithSetters;
 use ratatui::{
     buffer::Buffer,
     layout::Rect,
     style::{Style, Stylize},
-    text::{Line, Text},
     widgets::{Block, Borders, Clear, Paragraph, Widget, Wrap},
 };
 
-use crate::filter_mode::FilterMode;
+use crate::filter::filter::FilterMode;
 
 #[derive(Debug, Default, WithSetters)]
 #[getset(set_with = "pub")]
