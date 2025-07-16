@@ -1,12 +1,16 @@
-#[derive(Debug, Default, Clone, PartialEq)]
-pub enum FilterMode {
-    None,
-    Simple {
-        fields: usize,
-    },
-    Regex {
-        regex_string: String,
-    },
-    #[default]
-    Automatic,
+pub struct SimpleFilter {
+    split_character: char,
+    fields: usize,
 }
+
+pub struct RegexFilter {
+    regex_string: String,
+}
+
+/// Used to parse messages automatically with no user input.
+///
+/// Will likely be less accurate than a specifically made regex filter.
+pub struct AutomaticFilter {}
+
+/// Used to parse messages that are specifically in a json format.
+pub struct JsonFilter {}

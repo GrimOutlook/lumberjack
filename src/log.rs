@@ -49,7 +49,7 @@ impl Log {
                 )
             }) {
                 Ok(line_opt) => line_opt,
-                Err(e) => match e {},
+                Err(e) => todo!(),
             };
             match parsed_line_opt {
                 Some(log_line) => lines.push(log_line),
